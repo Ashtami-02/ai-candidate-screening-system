@@ -1,0 +1,26 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Generated data
+data/chroma_store/
+data/*.db
+data/uploads/
+
+# Knowledge base source PDFs (copyrighted textbooks -- not ours to
+# redistribute) and any resume files used for testing (personal info)
+data/knowledge_base/*.pdf
+data/knowledge_base/*.txt
+
+# Node / frontend
+frontend/node_modules/
+frontend/.next/
+frontend/dist/
+
+# OS
+.DS_Store
