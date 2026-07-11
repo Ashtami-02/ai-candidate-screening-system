@@ -41,7 +41,7 @@ cp .env.example .env
 Edit `.env` and add your Gemini API key (get one free at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)):
 ```
 GEMINI_API_KEY=your_key_here
-GEMINI_MODEL=gemini-2.5-flash-lite
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 Build the knowledge base (one-time):
