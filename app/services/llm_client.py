@@ -38,6 +38,6 @@ def generate(prompt: str, max_output_tokens: int = None) -> str:
     response = _model.generate_content(
         prompt,
         generation_config=generation_config,
-        request_options={"timeout": 20},
+        request_options={"timeout": 60},
     )
     return response.text

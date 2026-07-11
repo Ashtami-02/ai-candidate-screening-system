@@ -68,20 +68,34 @@ def _clean_json_response(raw_text: str) -> str:
 
 def parse_resume(file_path: str) -> dict:
     resume_text = extract_resume_text(file_path)
-
     prompt = EXTRACTION_PROMPT.format(resume_text=resume_text)
-    raw_response = generate(prompt, max_output_tokens=3000)
-    cleaned = _clean_json_response(raw_response)
 
-    try:
-        return json.loads(cleaned)
-    except json.JSONDecodeError as e:
-        # If parsing fails, surface the raw text -- this makes debugging
-        # much easier than a bare crash, since you can SEE what the model
-        # actually returned and adjust the prompt accordingly.
-        raise ValueError(
-            f"Could not parse LLM response as JSON.\nError: {e}\nRaw response:\n{raw_response}"
-        )
+    # Try increasingly generous token budgets. The Gemini 2.5 model family
+    # spends some of its budget on internal reasoning before writing the
+    # visible answer, so even a seemingly generous cap can still truncate
+    # mid-JSON. Rather than guess one "safe" number, retry with more room
+    # if the previous attempt didn't produce valid, complete JSON.
+    token_budgets = [3000, 6000, 10000]
+    last_error = None
+    last_raw_response = None
+
+    for budget in token_budgets:
+        raw_response = generate(prompt, max_output_tokens=budget)
+        cleaned = _clean_json_response(raw_response)
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError as e:
+            last_error = e
+            last_raw_response = raw_response
+            continue  # try again with a bigger budget
+
+    # If every attempt failed, surface the raw text -- this makes debugging
+    # much easier than a bare crash, since you can SEE what the model
+    # actually returned and adjust the prompt accordingly.
+    raise ValueError(
+        f"Could not parse LLM response as JSON after {len(token_budgets)} attempts.\n"
+        f"Last error: {last_error}\nLast raw response:\n{last_raw_response}"
+    )
 
 
 if __name__ == "__main__":
